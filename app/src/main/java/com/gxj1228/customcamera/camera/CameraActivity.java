@@ -40,6 +40,7 @@ public class CameraActivity extends Activity implements View.OnClickListener {
     private View optionView;
 
     private int type;
+    private ImageView mCrop;
 
     /**
      * 跳转到拍照页面
@@ -58,12 +59,25 @@ public class CameraActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.activity_camera);
 
         customCameraPreview = (CustomCameraPreview) findViewById(R.id.camera_surface);
+        mCrop = (ImageView) findViewById(R.id.crop);
+
+
         containerView = findViewById(R.id.camera_crop_container);
         cropView = (ImageView) findViewById(R.id.camera_crop);
         optionView = findViewById(R.id.camera_option);
+        float screenMinSize = Math.min(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
+        float height = (float) (screenMinSize * 0.75) / 2;
+        float width = height * 2;
+
+        RelativeLayout.LayoutParams linearParams = (RelativeLayout.LayoutParams) mCrop.getLayoutParams(); //取控件textView当前的布局参数 linearParams.height = 20;// 控件的高强制设成20
+        linearParams.width = (int) width;// 控件的宽强制设成30
+        linearParams.height = (int) height;// 控件的宽强制设成30
+
+        mCrop.setLayoutParams(linearParams); //使设置好的布局参数应用到控件
+
 
         //获取屏幕最小边，设置为cameraPreview较窄的一边
-        float screenMinSize = Math.min(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
+//        float screenMinSize = Math.min(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
         //根据screenMinSize，计算出cameraPreview的较宽的一边，长宽比为标准的16:9
         float maxSize = screenMinSize / 1.0f * 1.0f;
         RelativeLayout.LayoutParams layoutParams;
@@ -72,20 +86,20 @@ public class CameraActivity extends Activity implements View.OnClickListener {
         layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         customCameraPreview.setLayoutParams(layoutParams);
 
-        float height = (int) (screenMinSize * 0.75);
-        float width = (int) height;
+//        float height = (int) (screenMinSize * 0.75);
+//        float width = (int) height;
         LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams((int) width, ViewGroup.LayoutParams.MATCH_PARENT);
         LinearLayout.LayoutParams cropParams = new LinearLayout.LayoutParams((int) width, (int) height);
         containerView.setLayoutParams(containerParams);
-        cropView.setLayoutParams(cropParams);
-        switch (type) {
-            case TYPE_ID_CARD_FRONT:
-                cropView.setImageResource(R.mipmap.camera_front);
-                break;
-            case TYPE_ID_CARD_BACK:
-                cropView.setImageResource(R.mipmap.camera_back);
-                break;
-        }
+//        cropView.setLayoutParams(cropParams);
+//        switch (type) {
+//            case TYPE_ID_CARD_FRONT:
+//                cropView.setImageResource(R.mipmap.camera_front);
+//                break;
+//            case TYPE_ID_CARD_BACK:
+//                cropView.setImageResource(R.mipmap.camera_back);
+//                break;
+//        }
 
         customCameraPreview.setOnClickListener(this);
         findViewById(R.id.camera_close).setOnClickListener(this);
@@ -122,18 +136,13 @@ public class CameraActivity extends Activity implements View.OnClickListener {
                             camera.stopPreview();
                         }
                         if (bitmap != null) {
-                            //计算裁剪位置
-                            float left = ((float) containerView.getLeft() - (float) customCameraPreview.getLeft()) / (float) customCameraPreview.getWidth();
-                            float top = (float) cropView.getTop() / (float) customCameraPreview.getHeight();
-                            float right = (float) containerView.getRight() / (float) customCameraPreview.getWidth();
-                            float bottom = (float) cropView.getBottom() / (float) customCameraPreview.getHeight();
 
-                            //裁剪及保存到文件
                             Bitmap resBitmap = Bitmap.createBitmap(bitmap,
-                                    (int) (left * (float) bitmap.getWidth()),
-                                    (int) (top * (float) bitmap.getHeight()),
-                                    (int) ((right - left) * (float) bitmap.getWidth()),
-                                    (int) ((bottom - top) * (float) bitmap.getHeight()));
+                                    bitmap.getWidth() / 8,
+                                    bitmap.getHeight() *5/ 16,
+                                    bitmap.getWidth() *3/ 4,
+                                    bitmap.getWidth() *3/ 8);
+//6\8     3\8  5/8  2.5/8   5/16
 
                             FileUtil.saveBitmap(resBitmap);
 

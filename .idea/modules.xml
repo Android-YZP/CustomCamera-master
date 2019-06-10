@@ -4,6 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/CustomCamera-master.iml" filepath="$PROJECT_DIR$/CustomCamera-master.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/qrcodecore/qrcodecore.iml" filepath="$PROJECT_DIR$/qrcodecore/qrcodecore.iml" />
+      <module fileurl="file://$PROJECT_DIR$/zxing/zxing.iml" filepath="$PROJECT_DIR$/zxing/zxing.iml" />
     </modules>
   </component>
 </project>

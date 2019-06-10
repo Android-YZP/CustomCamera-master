@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,17 +16,26 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.ChecksumException;
+import com.google.zxing.FormatException;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.RGBLuminanceSource;
+import com.google.zxing.Result;
+import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeReader;
 import com.gxj1228.customcamera.R;
 import com.gxj1228.customcamera.util.FileUtil;
+
 
 /**
  * Created by gxj on 2018/2/18 11:46.
  * 拍照界面
  */
 public class CameraActivity extends Activity implements View.OnClickListener {
-
 
 
     public final static int REQUEST_CODE = 0X13;
@@ -62,7 +72,7 @@ public class CameraActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         customCameraPreview = findViewById(R.id.camera_surface);
-        mCrop =  findViewById(R.id.crop);
+        mCrop = findViewById(R.id.crop);
         imageViewTake = findViewById(R.id.camera_take);
         containerView = findViewById(R.id.camera_crop_container);
 
@@ -119,6 +129,15 @@ public class CameraActivity extends Activity implements View.OnClickListener {
                                     bitmap.getHeight() * 5 / 16,
                                     bitmap.getWidth() * 3 / 4,
                                     bitmap.getWidth() * 3 / 8);
+
+                            String codeRe = qrCode(resBitmap);
+                            if (!codeRe.isEmpty()) {
+                                Log.e("=======>", codeRe + "识别成功");
+                            } else {
+                                Log.e("=======>", codeRe + "识别失败");
+                            }
+
+
                             String path = FileUtil.saveBitmap(resBitmap);
                             if (!bitmap.isRecycled()) {
                                 bitmap.recycle();
@@ -127,6 +146,7 @@ public class CameraActivity extends Activity implements View.OnClickListener {
                                 resBitmap.recycle();
                             }
                             Log.e("=======>", path + "");
+
                             Message msg = new Message();
                             msg.what = 101;
                             mHandler.sendMessage(msg);
@@ -137,4 +157,37 @@ public class CameraActivity extends Activity implements View.OnClickListener {
             }
         });
     }
+
+    /**
+     * 识别bitmap中的二维码
+     */
+    public String qrCode(Bitmap obmp) {
+        //图片质量压缩之后再送给Zxing识别,提高识别率
+        Matrix matrix = new Matrix();
+        matrix.setScale(0.5f, 0.5f);
+        Bitmap  obmp1 = Bitmap.createBitmap(obmp, 0, 0, obmp.getWidth(),
+                obmp.getHeight(), matrix, true);
+
+        int width = obmp1.getWidth();
+        int height = obmp1.getHeight();
+        int[] data = new int[width * height];
+        obmp1.getPixels(data, 0, width, 0, 0, width, height);
+        RGBLuminanceSource source = new RGBLuminanceSource(width, height, data);
+        BinaryBitmap bitmap1 = new BinaryBitmap(new HybridBinarizer(source));
+        MultiFormatReader reader = new MultiFormatReader();
+        Result re = null;
+        try {
+            re = reader.decode(bitmap1);
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+        }
+        if (re == null) {
+            return "";
+        } else {
+            Log.e("=======>", re.getText() + "qrCode");
+            return re.getText();
+        }
+    }
+
+
 }

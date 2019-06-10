@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:background="#000">
 
+
     <com.gxj1228.customcamera.camera.CustomCameraPreview
         android:id="@+id/camera_surface"
         android:layout_width="wrap_content"

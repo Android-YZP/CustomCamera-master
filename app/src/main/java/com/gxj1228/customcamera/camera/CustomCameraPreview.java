@@ -148,9 +148,14 @@ public class CustomCameraPreview extends SurfaceView implements SurfaceHolder.Ca
      *
      * @param pictureCallback 在pictureCallback处理拍照回调
      */
-    public void takePhoto(Camera.PictureCallback pictureCallback) {
-        if (mCamera != null) {
-            mCamera.takePicture(null, null, pictureCallback);
-        }
+    public void takePhoto(final Camera.PictureCallback pictureCallback) {
+        mCamera.autoFocus(new Camera.AutoFocusCallback() {
+            @Override
+            public void onAutoFocus(boolean b, Camera camera) {
+                if (mCamera != null) {
+                    mCamera.takePicture(null, null, pictureCallback);
+                }
+            }
+        });
     }
 }

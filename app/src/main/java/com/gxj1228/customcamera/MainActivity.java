@@ -43,10 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 拍摄证件照片
-     *
-     * @param type 拍摄证件类型
      */
-    private void takePhoto(int type) {
+    private void takePhoto() {
         if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
         }
@@ -54,20 +52,14 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 0x12);
             return;
         }
-        CameraActivity.navToCamera(this, type);
+        CameraActivity.navToCamera(this);
     }
 
-    /**
-     * 身份证正面
-     */
     public void frontIdCard(View view) {
-        takePhoto(CameraActivity.TYPE_ID_CARD_FRONT);
+        takePhoto();
     }
 
-    /**
-     * 身份证反面
-     */
     public void backIdCard(View view) {
-        takePhoto(CameraActivity.TYPE_ID_CARD_BACK);
+        takePhoto();
     }
 }

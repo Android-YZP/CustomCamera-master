@@ -38,7 +38,7 @@ public class FileUtil {
      *
      * @param b 得到的图片
      */
-    public static void saveBitmap(Bitmap b) {
+    public static String saveBitmap(Bitmap b) {
         String path = initPath();
         long dataTake = System.currentTimeMillis();
         imgPath = path + "/" + dataTake + ".jpg";
@@ -48,9 +48,11 @@ public class FileUtil {
             b.compress(Bitmap.CompressFormat.JPEG, 100, bos);
             bos.flush();
             bos.close();
+            return imgPath;
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            return "";
         }
     }
 

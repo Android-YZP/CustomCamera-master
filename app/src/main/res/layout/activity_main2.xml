@@ -29,7 +29,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:onClick="frontIdCard"
-                android:text="身份证正面"
+                android:text="识别二维码"
                 android:textColor="#555"
                 android:textSize="16dp" />
 
@@ -40,7 +40,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:onClick="backIdCard"
-                android:text="身份证反面"
+                android:text="识别二维码"
                 android:textColor="#555"
                 android:textSize="16dp" />
 

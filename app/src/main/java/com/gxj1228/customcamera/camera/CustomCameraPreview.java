@@ -63,24 +63,6 @@ public class CustomCameraPreview extends SurfaceView implements SurfaceHolder.Ca
      * 预览相机
      */
     private void startPreview( SurfaceHolder holder) {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         try {
             mCamera.setPreviewDisplay(holder);
             Camera.Parameters parameters = mCamera.getParameters();
@@ -152,9 +134,9 @@ public class CustomCameraPreview extends SurfaceView implements SurfaceHolder.Ca
         mCamera.autoFocus(new Camera.AutoFocusCallback() {
             @Override
             public void onAutoFocus(boolean b, Camera camera) {
-                if (mCamera != null) {
-                    mCamera.takePicture(null, null, pictureCallback);
-                }
+                    if (mCamera != null) {
+                        mCamera.takePicture(null, null, pictureCallback);
+                    }
             }
         });
     }

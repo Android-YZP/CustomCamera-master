@@ -9,26 +9,33 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.zxing.BinaryBitmap;
-import com.google.zxing.ChecksumException;
-import com.google.zxing.FormatException;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.NotFoundException;
 import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
-import com.google.zxing.qrcode.QRCodeReader;
 import com.gxj1228.customcamera.R;
-import com.gxj1228.customcamera.util.FileUtil;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 
 /**
@@ -44,19 +51,27 @@ public class CameraActivity extends Activity implements View.OnClickListener {
     private View containerView;
 
     private ImageView mCrop;
-    public final int MAG_TAKE_PHOTO = 101;
+    public static final int MAG_TAKE_PHOTO = 101;
+    public static final int CODE_SUCCESS = 100;
+
+    private ImageView imageViewTake;
+    private TextView mTvRe;
+    private String mCodeRe;
 
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MAG_TAKE_PHOTO:
+                    mTvRe.setText("");
                     takePhoto();
+                    break;
+                case CODE_SUCCESS:
+                    mTvRe.setText(mCodeRe);
                     break;
             }
         }
     };
-    private ImageView imageViewTake;
 
 
     /**
@@ -74,6 +89,7 @@ public class CameraActivity extends Activity implements View.OnClickListener {
         customCameraPreview = findViewById(R.id.camera_surface);
         mCrop = findViewById(R.id.crop);
         imageViewTake = findViewById(R.id.camera_take);
+        mTvRe = findViewById(R.id.tv_re);
         containerView = findViewById(R.id.camera_crop_container);
 
 
@@ -81,7 +97,7 @@ public class CameraActivity extends Activity implements View.OnClickListener {
         float height = (float) (screenMinSize * 0.75) / 2;
         float width = height * 2;
 
-        RelativeLayout.LayoutParams linearParams = (RelativeLayout.LayoutParams) mCrop.getLayoutParams(); //取控件textView当前的布局参数 linearParams.height = 20;// 控件的高强制设成20
+        LinearLayout.LayoutParams linearParams = (LinearLayout.LayoutParams) mCrop.getLayoutParams(); //取控件textView当前的布局参数 linearParams.height = 20;// 控件的高强制设成20
         linearParams.width = (int) width;// 控件的宽强制设成30
         linearParams.height = (int) height;// 控件的宽强制设成30
         mCrop.setLayoutParams(linearParams); //使设置好的布局参数应用到控件
@@ -102,9 +118,6 @@ public class CameraActivity extends Activity implements View.OnClickListener {
         switch (v.getId()) {
             case R.id.camera_surface:
                 customCameraPreview.focus();
-                break;
-            case R.id.camera_close:
-                finish();
                 break;
             case R.id.camera_take:
                 takePhoto();
@@ -130,26 +143,28 @@ public class CameraActivity extends Activity implements View.OnClickListener {
                                     bitmap.getWidth() * 3 / 4,
                                     bitmap.getWidth() * 3 / 8);
 
-                            String codeRe = qrCode(resBitmap);
-                            if (!codeRe.isEmpty()) {
-                                Log.e("=======>", codeRe + "识别成功");
+                            mCodeRe = qrCode(resBitmap);
+                            if (!mCodeRe.isEmpty()) {
+                                Log.e("=======>", mCodeRe + "识别成功");
+
+                                Message msg = new Message();
+                                msg.what = CODE_SUCCESS;
+                                mHandler.sendMessage(msg);
+
+                                saveBitmap(resBitmap);
+                                if (!bitmap.isRecycled()) {
+                                    bitmap.recycle();
+                                }
+                                if (!resBitmap.isRecycled()) {
+                                    resBitmap.recycle();
+                                }
                             } else {
-                                Log.e("=======>", codeRe + "识别失败");
+                                Log.e("=======>", mCodeRe + "识别失败");
+                                Message msg = new Message();
+                                msg.what = MAG_TAKE_PHOTO;
+                                mHandler.sendMessage(msg);
                             }
 
-
-                            String path = FileUtil.saveBitmap(resBitmap);
-                            if (!bitmap.isRecycled()) {
-                                bitmap.recycle();
-                            }
-                            if (!resBitmap.isRecycled()) {
-                                resBitmap.recycle();
-                            }
-                            Log.e("=======>", path + "");
-
-                            Message msg = new Message();
-                            msg.what = 101;
-                            mHandler.sendMessage(msg);
                         }
                         return;
                     }
@@ -164,8 +179,8 @@ public class CameraActivity extends Activity implements View.OnClickListener {
     public String qrCode(Bitmap obmp) {
         //图片质量压缩之后再送给Zxing识别,提高识别率
         Matrix matrix = new Matrix();
-        matrix.setScale(0.5f, 0.5f);
-        Bitmap  obmp1 = Bitmap.createBitmap(obmp, 0, 0, obmp.getWidth(),
+        matrix.setScale(0.28f, 0.28f);
+        Bitmap obmp1 = Bitmap.createBitmap(obmp, 0, 0, obmp.getWidth(),
                 obmp.getHeight(), matrix, true);
 
         int width = obmp1.getWidth();
@@ -184,10 +199,41 @@ public class CameraActivity extends Activity implements View.OnClickListener {
         if (re == null) {
             return "";
         } else {
-            Log.e("=======>", re.getText() + "qrCode");
             return re.getText();
         }
     }
 
 
+    private final String SD_PATH = Environment.getExternalStorageDirectory().getPath() + "/OA头像/";
+
+    public void saveBitmap(Bitmap bmp) {
+        String savePath = "";
+        String fileName = SystemClock.currentThreadTimeMillis() + ".JPEG";
+        if (Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED)) {
+            savePath = SD_PATH;
+        }
+        File filePic = new File(savePath + fileName);
+        try {
+            if (!filePic.exists()) {
+                filePic.getParentFile().mkdirs();
+                filePic.createNewFile();
+            }
+            FileOutputStream fos = new FileOutputStream(filePic);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+//            Toast.makeText(CameraActivity.this, "保存成功,位置:" + filePic.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        // 其次把文件插入到系统图库
+        try {
+            MediaStore.Images.Media.insertImage(getContentResolver(),
+                    filePic.getAbsolutePath(), fileName, null);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 }

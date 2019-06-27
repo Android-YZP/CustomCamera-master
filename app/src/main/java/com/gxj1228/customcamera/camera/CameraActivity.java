@@ -193,7 +193,7 @@ public class CameraActivity extends Activity implements View.OnClickListener {
      * 识别bitmap中的二维码
      */
     public String qrCode(Bitmap obmp) {
-        //图片质量压缩之后再送给Zxing识别,调整识别率
+        //图片质量压缩之后再送给Zxing识别,调整识别率(0.3f,0.3f)
         Matrix matrix = new Matrix();
         matrix.setScale(0.30f, 0.30f);
         Bitmap obmp1 = Bitmap.createBitmap(obmp, 0, 0, obmp.getWidth(),

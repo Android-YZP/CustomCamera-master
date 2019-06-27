@@ -4,9 +4,10 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.util.AttributeSet;
-import android.util.Log;
+import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.WindowManager;
 
 import com.gxj1228.customcamera.util.CamParaUtil;
 
@@ -22,20 +23,21 @@ public class CustomCameraPreview extends SurfaceView implements SurfaceHolder.Ca
 
     public CustomCameraPreview(Context context) {
         super(context);
-        init();
+        init(context);
     }
 
     public CustomCameraPreview(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
+        init(context);
     }
 
     public CustomCameraPreview(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
+        init(context);
     }
 
-    private void init() {
+    private void init(Context context) {
+
         SurfaceHolder surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
         surfaceHolder.setKeepScreenOn(true);
@@ -69,6 +71,8 @@ public class CustomCameraPreview extends SurfaceView implements SurfaceHolder.Ca
 
                 mCamera.setDisplayOrientation(90);
                 parameters.setRotation(90);
+            // 设置照片质量
+            parameters.setJpegQuality(100);
 
             Camera.Size bestSize = CamParaUtil.getBestSize(parameters.getSupportedPreviewSizes());
             if (bestSize != null) {
@@ -78,6 +82,10 @@ public class CustomCameraPreview extends SurfaceView implements SurfaceHolder.Ca
                 parameters.setPreviewSize(720, 720);
                 parameters.setPictureSize(720, 720);
             }
+
+//            parameters.setZoom(20);
+            // 设置照片质量
+            parameters.setJpegQuality(100);
             mCamera.setParameters(parameters);
             mCamera.startPreview();
             focus();
@@ -91,6 +99,7 @@ public class CustomCameraPreview extends SurfaceView implements SurfaceHolder.Ca
                     mCamera.setDisplayOrientation(0);
                     parameters.setRotation(0);
                 }
+//                parameters.setZoom(20);
                 mCamera.setParameters(parameters);
                 mCamera.startPreview();
                 focus();
